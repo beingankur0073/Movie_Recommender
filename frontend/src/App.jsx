@@ -118,6 +118,7 @@ const App = () => {
                 {loading ? "Fetching..." : "Get Recommendations"}
             </Button>
             {error && <Typography color="error" style={{ marginTop: "20px" }}>{error}</Typography>}
+
             {recommendations.length > 0 && (
                 <Box mt={4} display="flex" flexDirection="column" alignItems="center" textAlign="center">
                     <Typography variant="h6">Recommended Movies:</Typography>
@@ -128,6 +129,7 @@ const App = () => {
                     </ul>
                 </Box>
             )}
+            
         </Paper>
     </Container>
    </div>
