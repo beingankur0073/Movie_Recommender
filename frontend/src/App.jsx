@@ -11,6 +11,8 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [movieFound, setMovieFound] = useState(true); 
+  console.log(movieFound)
 
   const fetchMoviePosters = async (movieTitles) => {
     const apiKey = "b472338e672a95044a2f1011849b7a67"; // Replace with your actual TMDb API Key
@@ -68,15 +70,20 @@ const App = () => {
       });
   
       if (data.recommendations && data.recommendations.length > 0) {
+        setMovieFound(true); // Movie is found, hide genre & keyword
         const movieTitles = data.recommendations.map(movie => toTitleCase(movie.title));
         fetchMoviePosters(movieTitles);
+      } else {
+        setMovieFound(false); // Movie not found, show genre & keyword
+        setError("No recommendations found. Try providing genres or keywords.");
+        setLoading(false);
       }
     } catch (err) {
-      setError("Movie not found.Provide genres and keywords");
+      setMovieFound(false);
+      setError("Error fetching recommendations. Please try again.");
       setLoading(false);
     }
   };
-  
 
 
 
@@ -122,6 +129,10 @@ const App = () => {
         justifyContent:"center",
         alignItems:"center",
         }}>
+
+
+
+
         <Paper
         elevation={3}
         sx={{
@@ -144,47 +155,85 @@ const App = () => {
              >
                 Movie Recommender
             </Typography>
+
+
+
             <TextField
                 label="Enter a Movie Name"
                 variant="outlined"
-                fullWidth
+                
                 value={movieName}
+                size="small" 
                 onChange={(e) => setMovieName(e.target.value)}
+                
                 sx={{ 
+                    width: "300px",
                     marginBottom: "20px", 
                     backgroundColor: "rgba(128, 128, 128, 1)", 
                     borderRadius: "5px" ,
-                    '& .MuiInputLabel-root': { color: 'white' }
-                }}
-            />
-            <TextField
-                label="Genre"
-                variant="outlined"
-                fullWidth
-                value={genres}
-                onChange={(e) => setGenre(e.target.value)}
-                sx={{ 
-                    marginBottom: "20px", 
-                    backgroundColor: "rgba(128, 128, 128, 1)", 
-                    borderRadius: "5px" ,
-                    '& .MuiInputLabel-root': { color: 'white' }
-                }}
-            />
-            <TextField
-                label="Keyword"
-                variant="outlined"
-                fullWidth
-                value={keywords}
-                onChange={(e) => setKeyword(e.target.value)}
-                sx={{ 
-                    marginBottom: "20px", 
-                    backgroundColor: "rgba(128, 128, 128, 1)", 
-                    borderRadius: "5px" ,
-                    '& .MuiInputLabel-root': { color: 'white' }
+                    '& .MuiInputLabel-root': { color: 'white' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: 'red' },
+                    '& .MuiOutlinedInput-root': {
+                        '& fieldset': { borderColor: 'white' }, // Default border color
+                        '&:hover fieldset': { borderColor: 'lightgray' }, // Border color on hover
+                        '&.Mui-focused fieldset': { borderColor: 'red' } // Red border when focused
+                    }
                 }}
             />
 
-            <Button variant="contained"
+{!movieFound && (
+  <>
+    <TextField
+      label="Genres"
+      variant="outlined"
+    
+      value={genres}
+      size="small" 
+      onChange={(e) => setGenre(e.target.value)}
+      sx={{ 
+        width: "700px",
+        marginBottom: "20px", 
+        backgroundColor: "rgba(128, 128, 128, 1)", 
+        borderRadius: "5px" ,
+        '& .MuiInputLabel-root': { color: 'white' },
+        '& .MuiInputLabel-root.Mui-focused': { color: 'red' },
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': { borderColor: 'white' }, 
+          '&:hover fieldset': { borderColor: 'lightgray' }, 
+          '&.Mui-focused fieldset': { borderColor: 'red' }
+        }
+      }}
+    />
+    <TextField
+      label="Keywords"
+      variant="outlined"
+      
+      size="small" 
+      value={keywords}
+      onChange={(e) => setKeyword(e.target.value)}
+      sx={{ 
+        width: "700px",
+        marginBottom: "20px", 
+        backgroundColor: "rgba(128, 128, 128, 1)", 
+        borderRadius: "5px" ,
+        '& .MuiInputLabel-root': { color: 'white' },
+        '& .MuiInputLabel-root.Mui-focused': { color: 'red' },
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': { borderColor: 'white' }, 
+          '&:hover fieldset': { borderColor: 'lightgray' }, 
+          '&.Mui-focused fieldset': { borderColor: 'red' }
+        }
+      }}
+    />
+  </>
+)}
+
+
+
+
+           
+
+          <Button variant="contained"
               sx={{ backgroundColor: "red", '&:hover': { backgroundColor: "darkred" }}}
             onClick={handleSubmit} disabled={loading}>
                 {loading ? "Fetching..." : "Get Recommendations"}
@@ -194,34 +243,49 @@ const App = () => {
 
           
             {recommendations.length > 0 && (
-            <Box mt={4} display="flex" flexDirection="column" alignItems="center" textAlign="center">
-              <Typography variant="h6" color="white">Recommended Movies:</Typography>
-              <Grid container spacing={2} justifyContent="center">
-                {recommendations.slice(currentIndex, currentIndex + 4).map((movie, index) => (
-                  <Grid item key={index}>
-                    <motion.div
-                      key={movie.title + currentIndex} // Ensures animation triggers on change
-                      initial={{ opacity: 0, x: -100 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.2 }}
-                    >
-                      <Paper sx={{ padding: 2, backgroundColor: "rgba(255, 255, 255, 0.1)", textAlign: "center" }}>
-                        <Typography color="white" variant="subtitle2" sx={{ fontSize: "0.8rem" }}>
-                          {movie.title}
-                        </Typography>
-                        <img src={movie.poster} alt={movie.title} style={{ width: "80px", height: "120px", borderRadius: "5px" }} />
-                      </Paper>
-                    </motion.div>
-                  </Grid>
-                ))}
-              </Grid>
-              {recommendations.length > 4 && (
-                <Button variant="contained" onClick={handleNextMovies} sx={{ mt: 2, backgroundColor: "blue", '&:hover': { backgroundColor: "darkblue" } }}>
-                  Next Movies
-                </Button>
-              )}
-            </Box>
-          )}
+              <Box mt={4} display="flex" flexDirection="column" alignItems="center" textAlign="center">
+                <Typography variant="h6" color="white">Recommended Movies:</Typography>
+                <Grid container spacing={2} justifyContent="center">
+                  {recommendations.slice(currentIndex, currentIndex + 4).map((movie, index) => (
+                    <Grid item key={index}>
+                      <motion.div
+                        key={movie.title + currentIndex} // Ensures animation triggers on change
+                        initial={{ opacity: 0, x: -100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.2 }}
+                        whileHover={{ scale: 1.2 }} // Slightly enlarge on hover
+                      >
+                        <Paper
+                          sx={{
+                            padding: 2,
+                            backgroundColor: "rgba(255, 255, 255, 0.1)",
+                            textAlign: "center",
+                            borderRadius: "10px",
+                            transition: "all 0.3s ease-in-out",
+                          }}
+                        >
+                          <Typography color="white" variant="subtitle2" sx={{ fontSize: "0.8rem" }}>
+                            {movie.title}
+                          </Typography>
+                          <img
+                            src={movie.poster}
+                            alt={movie.title}
+                            style={{ width: "80px", height: "120px", borderRadius: "5px" }}
+                            
+                          />
+                        </Paper>
+                      </motion.div>
+                    </Grid>
+                  ))}
+                </Grid>
+                {recommendations.length > 4 && (
+                  <Button variant="contained" onClick={handleNextMovies} sx={{ mt: 2, backgroundColor: "blue", '&:hover': { backgroundColor: "darkblue" } }}>
+                    Next Movies
+                  </Button>
+                )}
+              </Box>
+            )}
+
 
         {loading && (
             <Box mt={4} display="flex" flexDirection="column" alignItems="center" textAlign="center">

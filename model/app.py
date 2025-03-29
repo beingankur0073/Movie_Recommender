@@ -81,17 +81,30 @@ def recommend_by_genre_keywords(genres, keywords):
     top_10_indices = np.argsort(similarity_scores)[-10:][::-1]
     return [{"title": new_df.iloc[idx]['title']} for idx in top_10_indices]
 
+
 @app.route('/recommend', methods=['GET'])
 def recommend():
     title = request.args.get('title', '').strip()
     genres = request.args.get('genres', '').strip()
     keywords = request.args.get('keywords', '').strip()
+
     recommendations = None
+
+    # First, try to get recommendations by title
     if title:
         recommendations = recommend_movies(title)
+
+    # If no recommendations by title
     if not recommendations:
+        # Check if both genres and keywords are empty
+        if not genres and not keywords:
+            return jsonify({"message": "No recommendations found for the given title. Please enter genres or keywords."})
+        
+        # If at least one of them is provided, recommend by genre/keywords
         recommendations = recommend_by_genre_keywords(genres, keywords)
+
     return jsonify({"recommendations": recommendations if recommendations else []})
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
